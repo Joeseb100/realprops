@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Property {
+  id           Int             @id @default(autoincrement())
+  title        String
+  price        Float
+  location     String
+  type         String          @default("HOUSE") // HOUSE or PLOT
+  areaSqft     Int             @map("area_sqft")
+  bedrooms     Int             @default(0)
+  bathrooms    Int             @default(0)
+  description  String
+  phoneNumber  String          @map("phone_number")
+  status       String          @default("AVAILABLE") // AVAILABLE or SOLD
+  createdAt    DateTime        @default(now()) @map("created_at")
+  images       PropertyImage[]
+
+  @@map("properties")
+}
+
+model PropertyImage {
+  id         Int      @id @default(autoincrement())
+  propertyId Int      @map("property_id")
+  imageUrl   String   @map("image_url")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_images")
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+
+  @@map("admins")
+}
