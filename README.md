@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Real Properties - Lead Generation Website
+
+A premium real estate lead generation website built with **Next.js 16**, **Tailwind CSS**, and **PostgreSQL (Supabase)**.
+
+## Features
+
+- **Public Facing Website**:
+  - Home page with featured properties and advanced filtering.
+  - Property listings with search by location and type.
+  - Detailed property view with image gallery.
+  - "Call Now" and "WhatsApp" integration for instant leads.
+  - Fully responsive design.
+- **Admin Panel**:
+  - Secure login (`/admin/login`).
+  - Dashboard to manage properties.
+  - Add, edit, delete, and mark properties as sold.
+  - Image upload support.
+- **Backend**:
+  - Next.js API Routes.
+  - Prisma ORM with PostgreSQL.
+  - Supabase database hosting.
+
+## Tech Stack
+
+- **Frontend**: Next.js 16 (App Router), Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma
+- **Database**: PostgreSQL (Supabase)
+- **Deployment**: Vercel
 
 ## Getting Started
 
-First, run the development server:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Joeseb100/realprops.git
+   cd realproperties
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. **Set up environment variables**:
+   Create a `.env` file in the root directory and add the following:
+   ```env
+   # Database (Supabase)
+   DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres"
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+   # Auth
+   JWT_SECRET="your-secret-key"
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **Initialize the database**:
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
 
-## Learn More
+5. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+   Open [http://localhost:3000](http://localhost:3000) to see the result.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Admin Access
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **URL**: [http://localhost:3000/admin](http://localhost:3000/admin)
+- **Default Credentials** (if seeded):
+  - Email: `admin@realproperties.com`
+  - Password: `admin123`
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy easily on [Vercel](https://vercel.com).
+1. Import the project on Vercel.
+2. Add the `DATABASE_URL` and `JWT_SECRET` environment variables.
+3. Deploy!
