@@ -42,3 +42,14 @@ model Admin {
 
   @@map("admins")
 }
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  name      String
+  rating    Int      @default(5) // 1-5 stars
+  comment   String
+  approved  Boolean  @default(false) // admin must approve
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("reviews")
+}
