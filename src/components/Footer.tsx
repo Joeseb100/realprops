@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
     return (
@@ -8,9 +9,13 @@ export default function Footer() {
                     {/* Brand */}
                     <div>
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="w-8 h-8 bg-gradient-to-br from-amber-600 to-amber-800 rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-sm">RP</span>
-                            </div>
+                            <Image
+                                src="/logo.png"
+                                alt="Real Properties"
+                                width={40}
+                                height={40}
+                                className="rounded-lg"
+                            />
                             <span className="text-xl font-bold text-white tracking-tight">
                                 Real<span className="text-amber-500">Properties</span>
                             </span>
