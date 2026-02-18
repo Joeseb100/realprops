@@ -1,16 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #faf9f7;
+  --bg-primary: #f8f9fa;
   --bg-card: rgba(255, 255, 255, 0.72);
   --bg-glass: rgba(255, 255, 255, 0.6);
   --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-glass: rgba(255, 255, 255, 0.2);
-  --text-primary: #1a1a1a;
-  --text-secondary: #5c5c5c;
-  --text-muted: #8c8c8c;
-  --accent: #c45d2c;
-  --accent-soft: #f4ece6;
+  --text-primary: #1b2a3d;
+  --text-secondary: #4a5568;
+  --text-muted: #8896a6;
+  --accent: #1b4d7a;
+  --accent-soft: #e8f0f8;
+  --accent-gold: #b8952a;
+  --accent-gold-soft: #faf5e6;
   --green-wa: #25d366;
 }
 
@@ -59,7 +60,7 @@
   }
 
   .glass-strong {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(24px) saturate(200%);
     -webkit-backdrop-filter: blur(24px) saturate(200%);
     border: 1px solid rgba(0, 0, 0, 0.04);
@@ -75,7 +76,6 @@
   }
 }
 
-/* Subtle scrollbar */
 .overflow-x-auto::-webkit-scrollbar {
   display: none;
 }
@@ -85,7 +85,6 @@
   scrollbar-width: none;
 }
 
-/* Smooth page transitions */
 main {
   animation: fadeIn 0.3s ease;
 }

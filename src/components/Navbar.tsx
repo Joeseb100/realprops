@@ -24,32 +24,11 @@ export default function Navbar() {
                         </span>
                     </Link>
 
-                    {/* Desktop nav */}
                     <div className="hidden md:flex items-center gap-1">
-                        <Link
-                            href="/"
-                            className="px-3.5 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/[0.03] rounded-lg font-medium transition-all"
-                        >
-                            Home
-                        </Link>
-                        <Link
-                            href="/properties"
-                            className="px-3.5 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/[0.03] rounded-lg font-medium transition-all"
-                        >
-                            Properties
-                        </Link>
-                        <Link
-                            href="/properties?type=HOUSE"
-                            className="px-3.5 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/[0.03] rounded-lg font-medium transition-all"
-                        >
-                            Houses
-                        </Link>
-                        <Link
-                            href="/properties?type=PLOT"
-                            className="px-3.5 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/[0.03] rounded-lg font-medium transition-all"
-                        >
-                            Plots
-                        </Link>
+                        <Link href="/" className="px-3.5 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/[0.03] rounded-lg font-medium transition-all">Home</Link>
+                        <Link href="/properties" className="px-3.5 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/[0.03] rounded-lg font-medium transition-all">Properties</Link>
+                        <Link href="/properties?type=HOUSE" className="px-3.5 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/[0.03] rounded-lg font-medium transition-all">Houses</Link>
+                        <Link href="/properties?type=PLOT" className="px-3.5 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/[0.03] rounded-lg font-medium transition-all">Plots</Link>
                         <a
                             href="https://wa.me/919447139342"
                             target="_blank"
@@ -60,7 +39,6 @@ export default function Navbar() {
                         </a>
                     </div>
 
-                    {/* Mobile menu button */}
                     <button
                         onClick={() => setOpen(!open)}
                         className="md:hidden p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg hover:bg-black/[0.03] transition-colors"
@@ -77,21 +55,16 @@ export default function Navbar() {
                 </div>
             </div>
 
-            {/* Mobile menu */}
             {open && (
                 <div className="md:hidden glass-strong border-t border-[var(--border-subtle)] py-3 px-5 space-y-1">
                     <Link href="/" onClick={() => setOpen(false)} className="block text-[var(--text-secondary)] font-medium py-2.5 px-3 rounded-lg hover:bg-black/[0.03] transition-colors text-sm">Home</Link>
                     <Link href="/properties" onClick={() => setOpen(false)} className="block text-[var(--text-secondary)] font-medium py-2.5 px-3 rounded-lg hover:bg-black/[0.03] transition-colors text-sm">Properties</Link>
                     <Link href="/properties?type=HOUSE" onClick={() => setOpen(false)} className="block text-[var(--text-secondary)] font-medium py-2.5 px-3 rounded-lg hover:bg-black/[0.03] transition-colors text-sm">Houses</Link>
                     <Link href="/properties?type=PLOT" onClick={() => setOpen(false)} className="block text-[var(--text-secondary)] font-medium py-2.5 px-3 rounded-lg hover:bg-black/[0.03] transition-colors text-sm">Plots</Link>
-                    <a
-                        href="https://wa.me/919447139342"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block text-center bg-[var(--accent)] text-white font-medium py-2.5 px-3 rounded-lg text-sm mt-2"
-                    >
-                        Contact on WhatsApp
-                    </a>
+                    <div className="flex gap-2 pt-2">
+                        <a href="https://wa.me/919447139342" target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-[var(--accent)] text-white font-medium py-2.5 px-3 rounded-lg text-sm">WhatsApp</a>
+                        <a href="https://www.facebook.com/realktymproperties" target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-[#1877f2] text-white font-medium py-2.5 px-3 rounded-lg text-sm">Facebook</a>
+                    </div>
                 </div>
             )}
         </nav>
