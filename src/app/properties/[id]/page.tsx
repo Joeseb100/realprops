@@ -6,7 +6,7 @@ import StickyCallBar from "@/components/StickyCallBar";
 import Link from "next/link";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export async function generateMetadata({
     params,

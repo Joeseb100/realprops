@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import PropertyCard from "@/components/PropertyCard";
 import type { Property } from "@/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30; // cache page for 30s, then refresh in background
 
 export default async function HomePage() {
   const featuredProperties = (await prisma.property.findMany({

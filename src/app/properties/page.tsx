@@ -4,7 +4,7 @@ import type { Property } from "@/types";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export const metadata: Metadata = {
     title: "Properties for Sale in Kanjirapally | Houses & Plots",
