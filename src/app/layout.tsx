@@ -1,19 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
 export const metadata: Metadata = {
-  title: "RealProperties | Premium Homes & Plots in Kanjirapally",
+  title: "Real Properties | Trusted Homes & Plots in Kanjirapally",
   description:
-    "Find your dream home or plot in Kanjirapally. Premium properties at the best prices. Call now for instant details.",
-  keywords: "real estate, Kanjirapally, houses, plots, property for sale, Kerala",
+    "Find verified homes and plots in Kanjirapally. Trusted real estate broker with 10+ years experience. Contact on WhatsApp for instant details.",
+  keywords: "real estate, Kanjirapally, houses, plots, property for sale, Kerala, broker",
 };
 
 export default function RootLayout({
@@ -23,9 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased bg-stone-50 text-stone-900`}>
+      <body className="antialiased">
         <Navbar />
-        <main className="min-h-screen pt-16">{children}</main>
+        <main className="min-h-screen">{children}</main>
         <Footer />
       </body>
     </html>
