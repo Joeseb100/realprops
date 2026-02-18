@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminFromCookie } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 
-// POST /api/upload — upload images to public/uploads
+// POST /api/upload — upload images to Supabase Storage
 export async function POST(request: NextRequest) {
     const admin = await getAdminFromCookie();
     if (!admin) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Dynamically import to avoid build errors when env vars aren't set
+    const { uploadImage } = await import("@/lib/supabase");
 
     const formData = await request.formData();
     const files = formData.getAll("files") as File[];
@@ -17,23 +18,20 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "No files provided" }, { status: 400 });
     }
 
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
-
     const urls: string[] = [];
 
     for (const file of files) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
-
-        // Generate unique filename
-        const timestamp = Date.now();
         const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-        const filename = `${timestamp}-${safeName}`;
-        const filepath = path.join(uploadsDir, filename);
 
-        await writeFile(filepath, buffer);
-        urls.push(`/uploads/${filename}`);
+        try {
+            const publicUrl = await uploadImage(buffer, safeName, file.type || "image/jpeg");
+            urls.push(publicUrl);
+        } catch (err) {
+            console.error("Upload error:", err);
+            return NextResponse.json({ error: "Image upload failed" }, { status: 500 });
+        }
     }
 
     return NextResponse.json({ urls });
