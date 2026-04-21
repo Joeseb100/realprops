@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -14,9 +14,11 @@ interface PropertyRow {
     bathrooms: string;
     description: string;
     phoneNumber: string;
+    images: File[];
+    previews: string[];
 }
 
-const emptyRow: PropertyRow = {
+const emptyRow = (): PropertyRow => ({
     title: "",
     price: "",
     location: "",
@@ -26,44 +28,82 @@ const emptyRow: PropertyRow = {
     bathrooms: "0",
     description: "",
     phoneNumber: "+919447139342",
-};
+    images: [],
+    previews: [],
+});
 
 export default function BulkUploadPage() {
     const router = useRouter();
-    const [rows, setRows] = useState<PropertyRow[]>([{ ...emptyRow }]);
+    const [rows, setRows] = useState<PropertyRow[]>([emptyRow()]);
     const [csvText, setCsvText] = useState("");
     const [mode, setMode] = useState<"form" | "csv">("form");
     const [loading, setLoading] = useState(false);
+    const [uploadingRow, setUploadingRow] = useState<number | null>(null);
     const [results, setResults] = useState<{
         success: number;
         failed: number;
         errors: { row: number; error: string }[];
     } | null>(null);
 
+    const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
     function addRow() {
-        setRows([...rows, { ...emptyRow }]);
+        setRows([...rows, emptyRow()]);
     }
 
     function removeRow(index: number) {
-        setRows(rows.filter((_, i) => i !== index));
+        const updated = rows.filter((_, i) => i !== index);
+        setRows(updated);
     }
 
-    function updateRow(index: number, field: keyof PropertyRow, value: string) {
+    function updateRow(index: number, field: keyof Omit<PropertyRow, "images" | "previews">, value: string) {
         const updated = [...rows];
         updated[index] = { ...updated[index], [field]: value };
         setRows(updated);
     }
 
-    function parseCSV(text: string): PropertyRow[] {
+    function handleImagesChange(index: number, files: FileList | null) {
+        if (!files || files.length === 0) return;
+        const fileArr = Array.from(files);
+        const previews = fileArr.map((f) => URL.createObjectURL(f));
+        const updated = [...rows];
+        updated[index] = { ...updated[index], images: fileArr, previews };
+        setRows(updated);
+    }
+
+    function removeImage(rowIndex: number, imgIndex: number) {
+        const updated = [...rows];
+        const row = { ...updated[rowIndex] };
+        row.images = row.images.filter((_, i) => i !== imgIndex);
+        row.previews = row.previews.filter((_, i) => i !== imgIndex);
+        updated[rowIndex] = row;
+        setRows(updated);
+        // Reset file input so user can re-pick
+        if (fileInputRefs.current[rowIndex]) {
+            fileInputRefs.current[rowIndex]!.value = "";
+        }
+    }
+
+    function parseCSV(text: string): Omit<PropertyRow, "images" | "previews">[] {
         const lines = text.trim().split("\n");
         if (lines.length < 2) return [];
 
         const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
-        const parsed: PropertyRow[] = [];
+        const parsed: Omit<PropertyRow, "images" | "previews">[] = [];
 
         for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(",").map((v) => v.trim());
-            const row: PropertyRow = { ...emptyRow };
+            const row: Omit<PropertyRow, "images" | "previews"> = {
+                title: "",
+                price: "",
+                location: "",
+                type: "HOUSE",
+                areaSqft: "",
+                bedrooms: "0",
+                bathrooms: "0",
+                description: "",
+                phoneNumber: "+919447139342",
+            };
 
             headers.forEach((header, idx) => {
                 const val = values[idx] || "";
@@ -83,23 +123,54 @@ export default function BulkUploadPage() {
         return parsed;
     }
 
+    async function uploadRowImages(row: PropertyRow): Promise<string[]> {
+        if (row.images.length === 0) return [];
+        const formData = new FormData();
+        row.images.forEach((file) => formData.append("files", file));
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        const data = await res.json();
+        return data.urls || [];
+    }
+
     async function handleSubmit() {
         setLoading(true);
         setResults(null);
 
-        const properties = mode === "csv" ? parseCSV(csvText) : rows;
+        const baseProperties = mode === "csv"
+            ? parseCSV(csvText).map((p) => ({ ...p, images: [] as File[], previews: [] as string[] }))
+            : rows;
 
-        if (properties.length === 0) {
+        if (baseProperties.length === 0) {
             setResults({ success: 0, failed: 1, errors: [{ row: 0, error: "No valid properties to upload" }] });
             setLoading(false);
             return;
         }
 
+        // Upload images per row, then collect properties with imageUrls
+        const propertiesWithUrls: (Omit<PropertyRow, "images" | "previews"> & { imageUrls?: string[] })[] = [];
+
+        for (let i = 0; i < baseProperties.length; i++) {
+            setUploadingRow(i);
+            const row = baseProperties[i];
+            let imageUrls: string[] | undefined;
+            try {
+                if (row.images.length > 0) {
+                    imageUrls = await uploadRowImages(row);
+                }
+            } catch {
+                // Non-fatal: property will be created without images
+            }
+            const { images: _i, previews: _p, ...rest } = row as PropertyRow;
+            propertiesWithUrls.push({ ...rest, ...(imageUrls ? { imageUrls } : {}) });
+        }
+
+        setUploadingRow(null);
+
         try {
             const res = await fetch("/api/properties/bulk", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ properties }),
+                body: JSON.stringify({ properties: propertiesWithUrls }),
             });
             const data = await res.json();
             setResults(data);
@@ -111,6 +182,8 @@ export default function BulkUploadPage() {
         }
         setLoading(false);
     }
+
+    const csvRowCount = parseCSV(csvText).length;
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -133,8 +206,8 @@ export default function BulkUploadPage() {
                 <button
                     onClick={() => setMode("form")}
                     className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${mode === "form"
-                            ? "bg-amber-600 text-white"
-                            : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                        ? "bg-amber-600 text-white"
+                        : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                         }`}
                 >
                     📝 Manual Entry
@@ -142,8 +215,8 @@ export default function BulkUploadPage() {
                 <button
                     onClick={() => setMode("csv")}
                     className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${mode === "csv"
-                            ? "bg-amber-600 text-white"
-                            : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                        ? "bg-amber-600 text-white"
+                        : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                         }`}
                 >
                     📄 Paste CSV
@@ -193,13 +266,13 @@ export default function BulkUploadPage() {
                             onClick={() => {
                                 const parsed = parseCSV(csvText);
                                 if (parsed.length > 0) {
-                                    setRows(parsed);
+                                    setRows(parsed.map((p) => ({ ...p, images: [], previews: [] })));
                                     setMode("form");
                                 }
                             }}
                             className="text-sm text-amber-600 hover:text-amber-700 font-medium"
                         >
-                            Preview as Form ({parseCSV(csvText).length} rows) →
+                            Preview as Form ({csvRowCount} rows) →
                         </button>
                     </div>
                 </div>
@@ -282,6 +355,48 @@ export default function BulkUploadPage() {
                                 rows={2}
                                 className="mt-3 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
                             />
+
+                            {/* ── Image Upload ── */}
+                            <div className="mt-4 pt-4 border-t border-stone-100">
+                                <label className="block text-sm font-medium text-stone-700 mb-2">
+                                    📷 Images <span className="text-stone-400 font-normal">(optional)</span>
+                                </label>
+
+                                {/* Thumbnails */}
+                                {row.previews.length > 0 && (
+                                    <div className="flex gap-2 flex-wrap mb-3">
+                                        {row.previews.map((src, imgIdx) => (
+                                            <div key={imgIdx} className="relative group">
+                                                <img
+                                                    src={src}
+                                                    alt={`Preview ${imgIdx + 1}`}
+                                                    className="w-20 h-20 object-cover rounded-xl border border-stone-200"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeImage(index, imgIdx)}
+                                                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <input
+                                    ref={(el) => { fileInputRefs.current[index] = el; }}
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={(e) => handleImagesChange(index, e.target.files)}
+                                    className="w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer"
+                                />
+
+                                {uploadingRow === index && (
+                                    <p className="text-xs text-amber-600 mt-1 animate-pulse">⏳ Uploading images...</p>
+                                )}
+                            </div>
                         </div>
                     ))}
 
@@ -307,7 +422,11 @@ export default function BulkUploadPage() {
                     disabled={loading}
                     className="px-8 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white rounded-xl font-bold transition-colors shadow-lg shadow-amber-600/20"
                 >
-                    {loading ? "Uploading..." : `Upload ${mode === "csv" ? parseCSV(csvText).length : rows.length} Properties`}
+                    {loading
+                        ? uploadingRow !== null
+                            ? `Uploading images for #${uploadingRow + 1}...`
+                            : "Creating properties..."
+                        : `Upload ${mode === "csv" ? csvRowCount : rows.length} ${mode === "csv" ? csvRowCount : rows.length === 1 ? "Property" : "Properties"}`}
                 </button>
             </div>
         </div>

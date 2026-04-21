@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
                         description: p.description,
                         phoneNumber: p.phoneNumber,
                         status: p.status || "AVAILABLE",
-                        images: p.images?.length
+                        images: p.imageUrls?.length
                             ? {
-                                create: p.images.map((url: string) => ({ imageUrl: url })),
+                                create: p.imageUrls.map((url: string) => ({ imageUrl: url })),
                             }
                             : undefined,
                     },
