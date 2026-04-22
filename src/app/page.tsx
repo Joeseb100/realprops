@@ -4,22 +4,31 @@ import PropertyCard from "@/components/PropertyCard";
 import ReviewsSection from "@/components/ReviewsSection";
 import type { Property } from "@/types";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const featuredProperties = (await prisma.property.findMany({
-    where: { status: "AVAILABLE" },
-    include: { images: true },
-    orderBy: { createdAt: "desc" },
-    take: 6,
-  })) as Property[];
+  let featuredProperties: Property[] = [];
+  let locations: { location: string; _count: { location: number } }[] = [];
+  let totalProperties = 0;
 
-  const locations = await prisma.property.groupBy({
-    by: ["location"],
-    _count: { location: true },
-  });
+  try {
+    featuredProperties = (await prisma.property.findMany({
+      where: { status: "AVAILABLE" },
+      include: { images: true },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+    })) as Property[];
 
-  const totalProperties = await prisma.property.count();
+    locations = await prisma.property.groupBy({
+      by: ["location"],
+      _count: { location: true },
+    });
+
+    totalProperties = await prisma.property.count();
+  } catch (err) {
+    console.error("DB error on home page:", err);
+    // Page will render with empty data — DB may be waking up
+  }
 
   return (
     <>
