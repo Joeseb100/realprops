@@ -67,8 +67,16 @@ export default function BulkUploadPage() {
         const fileArr = Array.from(files);
         const previews = fileArr.map((f) => URL.createObjectURL(f));
         const updated = [...rows];
-        updated[index] = { ...updated[index], images: fileArr, previews };
+        updated[index] = { 
+            ...updated[index], 
+            images: [...updated[index].images, ...fileArr], 
+            previews: [...updated[index].previews, ...previews] 
+        };
         setRows(updated);
+        // Reset file input so user can pick the same file again or add more
+        if (fileInputRefs.current[index]) {
+            fileInputRefs.current[index]!.value = "";
+        }
     }
 
     function removeImage(rowIndex: number, imgIndex: number) {
@@ -125,11 +133,29 @@ export default function BulkUploadPage() {
 
     async function uploadRowImages(row: PropertyRow): Promise<string[]> {
         if (row.images.length === 0) return [];
-        const formData = new FormData();
-        row.images.forEach((file) => formData.append("files", file));
-        const res = await fetch("/api/upload", { method: "POST", body: formData });
-        const data = await res.json();
-        return data.urls || [];
+        
+        const urls: string[] = [];
+        
+        // Upload images one by one to avoid Vercel 4.5MB payload size limits
+        for (const file of row.images) {
+            const formData = new FormData();
+            formData.append("files", file);
+            try {
+                const res = await fetch("/api/upload", { method: "POST", body: formData });
+                if (!res.ok) {
+                    console.error("Upload failed for file", file.name);
+                    continue;
+                }
+                const data = await res.json();
+                if (data.urls && data.urls.length > 0) {
+                    urls.push(...data.urls);
+                }
+            } catch (err) {
+                console.error("Error uploading file", file.name, err);
+            }
+        }
+        
+        return urls;
     }
 
     async function handleSubmit() {

@@ -28,14 +28,24 @@ export default function NewPropertyPage() {
         setLoading(true);
 
         try {
-            // Upload images first
+            // Upload images first (one by one to avoid Vercel 4.5MB limits)
             let imageUrls: string[] = [];
             if (files && files.length > 0) {
-                const formData = new FormData();
-                Array.from(files).forEach((file) => formData.append("files", file));
-                const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-                const uploadData = await uploadRes.json();
-                imageUrls = uploadData.urls || [];
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const formData = new FormData();
+                    formData.append("files", file);
+                    try {
+                        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+                        if (!uploadRes.ok) continue;
+                        const uploadData = await uploadRes.json();
+                        if (uploadData.urls) {
+                            imageUrls.push(...uploadData.urls);
+                        }
+                    } catch (err) {
+                        console.error("Error uploading file", err);
+                    }
+                }
             }
 
             // Create property
