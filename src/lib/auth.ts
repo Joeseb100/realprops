@@ -2,10 +2,14 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 
-const JWT_SECRET = process.env.JWT_SECRET || "realproperties-secret-key-change-in-production";
+// Hard-fail at startup if JWT_SECRET is not explicitly set — never use a default in production.
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET environment variable is not set. Set it before starting the server.");
+}
 
 export async function hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
+    return bcrypt.hash(password, 12); // cost factor 12 — stronger than 10
 }
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
@@ -13,12 +17,12 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 export function generateToken(payload: { id: number; email: string }): string {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+    return jwt.sign(payload, JWT_SECRET!, { expiresIn: "24h" }); // 24h instead of 7d
 }
 
 export function verifyToken(token: string): { id: number; email: string } | null {
     try {
-        return jwt.verify(token, JWT_SECRET) as { id: number; email: string };
+        return jwt.verify(token, JWT_SECRET!) as { id: number; email: string };
     } catch {
         return null;
     }

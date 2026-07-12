@@ -54,3 +54,5 @@ prisma/*.db-journal
 !/public/uploads/.gitkeep
 
 .vercel
+
+.vercel

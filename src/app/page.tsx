@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import PropertyCard from "@/components/PropertyCard";
+import PropertiesGrid from "@/components/PropertiesGrid";
 import ReviewsSection from "@/components/ReviewsSection";
 import type { Property } from "@/types";
 
@@ -139,11 +139,7 @@ export default async function HomePage() {
           </Link>
         </div>
         {featuredProperties.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {featuredProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
+          <PropertiesGrid properties={featuredProperties} />
         ) : (
           <div className="text-center py-20 glass rounded-2xl">
             <p className="text-[var(--text-muted)] text-base">No properties listed yet.</p>

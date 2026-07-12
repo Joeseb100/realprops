@@ -6,11 +6,12 @@ export default async function AdminLayout({
 }: {
     children: React.ReactNode;
 }) {
-    // Don't check auth for login page
+    // Route protection is handled by middleware.ts.
+    // This layout is kept for shared admin UI wrappers if needed in the future.
     return <>{children}</>;
 }
 
-// Helper for admin pages to use
+// Helper kept for backward-compat — admin pages that call requireAuth() still work fine.
 export async function requireAuth() {
     const authed = await isAuthenticated();
     if (!authed) redirect("/admin/login");

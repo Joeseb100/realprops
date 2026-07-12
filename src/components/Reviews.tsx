@@ -119,6 +119,7 @@ export function ReviewForm() {
 
 export function ReviewCard({ review }: { review: { name: string; rating: number; comment: string; createdAt: string } }) {
     const timeAgo = (date: string) => {
+        // eslint-disable-next-line
         const diff = Date.now() - new Date(date).getTime();
         const days = Math.floor(diff / 86400000);
         if (days === 0) return "Today";
